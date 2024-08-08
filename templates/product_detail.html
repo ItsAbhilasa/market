@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .product-container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .product-image {
+            max-width: 100%;
+            height: auto;
+        }
+        .farmer-list {
+            list-style: none;
+            padding: 0;
+        }
+        .farmer-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        .farmer-info {
+            flex-grow: 1;
+        }
+        .quantity-input {
+            width: 80px;
+            margin-right: 10px;
+        }
+        .buy-button {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="product-container">
+        <h1>{{ product.name }}</h1>
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+        <p>{{ product.description }}</p>
+        <p>Price: ₹{{ product.price }}</p>
+        <h2>Available from Farmers:</h2>
+        <ul class="farmer-list">
+            {% for fp in farmer_products %}
+                <li class="farmer-item">
+                    <div class="farmer-info">
+                        <strong>{{ fp.user.username }}</strong> - {{ fp.quantity }} kg
+                    </div>
+                    <div>
+                        <input type="number" class="form-control quantity-input" placeholder="Qty" min="1" max="{{ fp.quantity }}">
+                        <button class="btn btn-success buy-button">Buy</button>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('products') }}" class="btn btn-secondary mt-3">Back to Products</a>
+    </div>
+
+    <script>
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('input', function() {
+                const quantity = parseInt(this.value, 10);
+                const maxQuantity = parseInt(this.max, 10);
+                const buyButton = this.nextElementSibling;
+                
+                if (quantity > 0 && quantity <= maxQuantity) {
+                    buyButton.style.display = 'inline-block';
+                } else {
+                    buyButton.style.display = 'none';
+                }
+            });
+        });
+
+        document.querySelectorAll('.buy-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const quantity = this.previousElementSibling.value;
+                if (quantity > 0) {
+                    // Redirect to the payment page with the selected quantity
+                    const url = `/payment?product_id={{ product.id }}&quantity=${quantity}&farmer_id=${this.closest('.farmer-item').getAttribute('data-farmer-id')}`;
+                    window.location.href = url;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
